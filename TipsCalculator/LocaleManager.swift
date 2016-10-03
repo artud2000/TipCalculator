@@ -9,72 +9,26 @@
 import Foundation
 import UIKit
 
-class LocaleManager: Equatable {
+class LocaleManager {
     
-    static let sharedInstace: LocaleManager = {
-        let instance = LocaleManager()
-        
-        return instance
-    }()
-    
-    var localeDictionary: [String: String] = [String: String]()
-    
-    init(identifiers: [String]? = NSLocale.availableLocaleIdentifiers) {
-        let locale = NSLocale(localeIdentifier: "en_US")
-        for identifier in identifiers! {
-            let name: String = locale.displayName(forKey: NSLocale.Key.identifier, value: identifier)!
-            localeDictionary[identifier] = name
-        }
-    }
-    
-    func stripLocale(value: String) -> String {
-        let cleanedString: CharacterSet = CharacterSet(charactersIn: "0123456789.,").inverted
-        let totalComponents: [String] = (value.components(separatedBy: cleanedString) )
-        var appendedComponents: String = ""
-        
-        for component: String in totalComponents {
-            appendedComponents.append(component)
-        }
-        
-        appendedComponents = appendedComponents.replacingOccurrences(of: ",", with: ".")
-        
-        if appendedComponents.characters.count == 0 {
-            appendedComponents = "0.00"
-        }
-        
-        return appendedComponents
-    }
-    
-    func formatLocale(value: String, locale: String) -> String {
-        let appendedComponents: String = self.stripLocale(value: value)
-        
+    class func formatLocale(value: Double, locale: String) -> String {
         let formatter: NumberFormatter = NumberFormatter()
         formatter.numberStyle = NumberFormatter.Style.currency
         formatter.locale = Locale(identifier: locale)
-        let totalPriceNumber: Float = Float(appendedComponents)!
 
-        return formatter.string(from: NSNumber(value: totalPriceNumber))!
+        return formatter.string(from: NSNumber(value: value))!
     }
     
-    func returnFloatWithoutLocale(value: String) -> Float {
-        let appendedComponents: String = self.stripLocale(value: value)
-        let totalPriceNumber: Float = Float(appendedComponents)!
-        
-        return totalPriceNumber
-    }
-    
-    public static func ==(lhs: LocaleManager, rhs: LocaleManager) -> Bool {
-        if (lhs.localeDictionary.count != rhs.localeDictionary.count) {
-            return false
+    class func constructLocale() -> [String: String] {
+        let locale = NSLocale(localeIdentifier: "en_US")
+        let identifiers = NSLocale.availableLocaleIdentifiers
+        var localeDictionary: [String: String] = [String: String]()
+        for identifier in identifiers {
+            let name: String = locale.displayName(forKey: NSLocale.Key.identifier, value: identifier)!
+            localeDictionary[identifier] = name
         }
         
-        for identifier in NSLocale.availableLocaleIdentifiers {
-            if lhs.localeDictionary[identifier] != rhs.localeDictionary[identifier] {
-                return false
-            }
-        }
-        
-        return true
+        return localeDictionary
     }
 }
 

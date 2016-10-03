@@ -24,23 +24,23 @@ class CalculatorViewController: UIViewController {
     
     var currentTotalValue: String = "0.00"
     
+    var currentTotal: Double = 0.00
+    var currentNumberOfPeople: Int = 1
+    var currentAmountPerPerson: Double = 0.00
+    var currentTipPercentage: Int = 0
+    var currentTipTotal: Double = 0.00
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(formatLocale), name: NSNotification.Name(rawValue: notificationUpdatedLocale), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(totalUpdatedWithValue(notification:)), name: NSNotification.Name(rawValue: notificationTotalUpdated), object: nil)
         
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        numberOfPeopleLabel?.text = UserDefaults.standard.object(forKey: numberOfPeopleKey) != nil ? String(describing: UserDefaults.standard.object(forKey: numberOfPeopleKey)!) : "1"
-        percentageLabel?.text = UserDefaults.standard.object(forKey: tipPercentageKey) != nil ? "\(String(describing: UserDefaults.standard.object(forKey: tipPercentageKey)!))%" : "0%"
-        self.updateValuesForUIEvent(totalString: self.currentTotalValue)
         
-        paymentPerPersonLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (paymentPerPersonLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
-        
-        tipTotalLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (tipTotalLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
+        initializeUIElements()
+        updateValuesForUIEvent()
         
         self.view.backgroundColor = Theme.tipControlsBackgroundColor
         tipTotalLabel?.textColor = Theme.tipControlsFontColor
@@ -54,83 +54,73 @@ class CalculatorViewController: UIViewController {
         
     }
     
-    
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
     }
-    
 }
 
 //UI Events
 extension CalculatorViewController {
     @IBAction func increaseNumberOfPeople(sender: UIButton) {
-        var numberOfPeople: Int = Int((numberOfPeopleLabel?.text)!)!
-        numberOfPeople = numberOfPeople + 1
-        numberOfPeopleLabel?.text = "\(numberOfPeople)"
-        self.updateValuesForUIEvent(totalString: self.currentTotalValue)
-        UserDefaults.standard.set(numberOfPeople, forKey: numberOfPeopleKey)
+        currentNumberOfPeople += 1
+        updateCalculatorValues()
+        updateValuesForUIEvent()
+        UserDefaults.standard.set(currentNumberOfPeople, forKey: numberOfPeopleKey)
     }
     
     @IBAction func decreaseNumberOfPeople(sender: UIButton) {
-        var numberOfPeople: Int = Int((numberOfPeopleLabel?.text)!)!
-        
-        if ( numberOfPeople > 1 ) {
-            numberOfPeople = numberOfPeople - 1
-            numberOfPeopleLabel?.text = "\(numberOfPeople)"
-            self.updateValuesForUIEvent(totalString: self.currentTotalValue)
-            UserDefaults.standard.set(numberOfPeople, forKey: numberOfPeopleKey)
+        if ( currentNumberOfPeople > 1 ) {
+            currentNumberOfPeople = currentNumberOfPeople - 1
+            updateCalculatorValues()
+            updateValuesForUIEvent()
+            UserDefaults.standard.set(currentNumberOfPeople, forKey: numberOfPeopleKey)
         }
     }
     
     @IBAction func increaseTipPercentage(sender: UIButton) {
-        let tipPercentStrippedString: String = (percentageLabel?.text?.replacingOccurrences(of: "%", with: ""))!
-        var tipPercent: Int = Int(tipPercentStrippedString)!
-        tipPercent = tipPercent + 1
-        percentageLabel?.text = "%\(tipPercent)"
-        self.updateValuesForUIEvent(totalString: self.currentTotalValue)
-        UserDefaults.standard.set(tipPercent, forKey: tipPercentageKey)
+        currentTipPercentage += 1
+        updateCalculatorValues()
+        updateValuesForUIEvent()
+        UserDefaults.standard.set(currentTipPercentage, forKey: tipPercentageKey)
     }
     
     @IBAction func decreaseTipPercentage(sender: UIButton) {
-        let tipPercentStrippedString: String = (percentageLabel?.text?.replacingOccurrences(of: "%", with: ""))!
-        var tipPercent: Int = Int(tipPercentStrippedString)!
         
-        if  ( tipPercent > 0 ) {
-            tipPercent = tipPercent - 1
-            percentageLabel?.text = "%\(tipPercent)"
-            self.updateValuesForUIEvent(totalString: self.currentTotalValue)
-            UserDefaults.standard.set(tipPercent, forKey: tipPercentageKey)
+        if  ( currentTipPercentage > 0 ) {
+            currentTipPercentage = currentTipPercentage - 1
+            updateCalculatorValues()
+            updateValuesForUIEvent()
+            UserDefaults.standard.set(currentTipPercentage, forKey: tipPercentageKey)
         }
     }
 }
 
 extension CalculatorViewController {
-    func updateValuesForUIEvent(totalString: String) {
-        self.currentTotalValue = totalString
-        
-        let totalNumeric: Float = LocaleManager.sharedInstace.returnFloatWithoutLocale(value: totalString)
-        
-        let percentageNumeric: Int = Int((percentageLabel?.text?.replacingOccurrences(of: "%", with: ""))!)!
-        
-        let totalTipFloat: Float = TipCalculatorManager.calculateIndividualPayment(total: totalNumeric, percentage: percentageNumeric, people:Int( (numberOfPeopleLabel?.text)!)!)
-        let perPersonTipFloat: Float = TipCalculatorManager.calculateTotalTip(total: totalNumeric, percentage: percentageNumeric)
-        
-        tipTotalLabel?.text = LocaleManager.sharedInstace.formatLocale(value: String(format: "%.2f", perPersonTipFloat), locale: Locale.availableIdentifiers[selectedLocale])
-        
-        paymentPerPersonLabel?.text = LocaleManager.sharedInstace.formatLocale(value: String(format: "%.2f", totalTipFloat), locale: Locale.availableIdentifiers[selectedLocale])
+    func updateValuesForUIEvent() {
+        numberOfPeopleLabel?.text = "\(currentNumberOfPeople)"
+        percentageLabel?.text = "\(currentTipPercentage)"
+        tipTotalLabel?.text = LocaleManager.formatLocale(value: currentTipTotal, locale: Locale.availableIdentifiers[selectedLocale])
+        paymentPerPersonLabel?.text = LocaleManager.formatLocale(value: currentAmountPerPerson, locale: Locale.availableIdentifiers[selectedLocale])
     }
 }
 
-//Notifications observers
 extension CalculatorViewController {
-    func totalUpdatedWithValue(notification: Notification) {
-        let totalString: String = notification.object as! String
-        self.updateValuesForUIEvent(totalString: totalString)
+    func updateCalculatorValues() {
+        currentTipTotal = TipCalculatorManager.calculateTotalTip(total: currentTotal, percentage: currentTipPercentage)
+        currentAmountPerPerson = TipCalculatorManager.calculateIndividualPayment(total: currentTotal, percentage: currentTipPercentage, people: currentNumberOfPeople)
     }
     
-    func formatLocale() {
-        paymentPerPersonLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (paymentPerPersonLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
-        tipTotalLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (tipTotalLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
+    func totalUpdatedWithValue(notification: Notification) {
+        currentTotal = notification.object as! Double
+        updateValuesForUIEvent()
+    }
+    
+    func initializeUIElements() {
+        numberOfPeopleLabel?.text = UserDefaults.standard.object(forKey: numberOfPeopleKey) != nil ? String(describing: UserDefaults.standard.object(forKey: numberOfPeopleKey)!) : "1"
+        percentageLabel?.text = UserDefaults.standard.object(forKey: tipPercentageKey) != nil ? "\(String(describing: UserDefaults.standard.object(forKey: tipPercentageKey)!))%" : "0%"
+        
+        paymentPerPersonLabel?.text = LocaleManager.formatLocale(value: currentAmountPerPerson, locale: Locale.availableIdentifiers[self.selectedLocale])
+        tipTotalLabel?.text = LocaleManager.formatLocale(value: currentTipTotal, locale: Locale.availableIdentifiers[self.selectedLocale])
     }
 }
 

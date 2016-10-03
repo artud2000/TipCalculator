@@ -18,6 +18,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var containerView: UIView?
     weak var calculatorVC: CalculatorViewController?
     weak var settingsVC: SettingsViewController?
+    var currentTotal: Double = 0.00
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -40,7 +41,7 @@ class ViewController: UIViewController {
         totalConsumeLabel?.keyboardType = UIKeyboardType.decimalPad
         totalConsumeLabel?.delegate = self
         totalConsumeLabel?.textColor = Theme.calculatorFontColor
-        totalConsumeLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (totalConsumeLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
+        totalConsumeLabel?.text = LocaleManager.formatLocale(value: currentTotal, locale: Locale.availableIdentifiers[self.selectedLocale])
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -83,8 +84,9 @@ extension ViewController: UITextViewDelegate {
     func textViewDidEndEditing(_ textView: UITextView) {
         self.view.layoutIfNeeded()
         self.verticalConstraintConsumeLabel?.constant = 0
-        NotificationCenter.default.post(Notification(name: Notification.Name(notificationTotalUpdated), object: self.totalConsumeLabel?.text, userInfo: nil))
-        totalConsumeLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (totalConsumeLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
+        currentTotal = Double((totalConsumeLabel?.text!)!)!
+        NotificationCenter.default.post(Notification(name: Notification.Name(notificationTotalUpdated), object: currentTotal, userInfo: nil))
+        totalConsumeLabel?.text = LocaleManager.formatLocale(value: currentTotal, locale: Locale.availableIdentifiers[self.selectedLocale])
         UIView.animate(withDuration: 0.5, animations: {
             self.view.layoutIfNeeded()
             }, completion: { (completed: Bool) in
@@ -117,7 +119,7 @@ extension ViewController {
 //Convenience methods
 extension ViewController {
     func formatLocale() {
-        totalConsumeLabel?.text = LocaleManager.sharedInstace.formatLocale(value: (totalConsumeLabel?.text)!, locale: Locale.availableIdentifiers[self.selectedLocale])
+        totalConsumeLabel?.text = LocaleManager.formatLocale(value: currentTotal, locale: Locale.availableIdentifiers[self.selectedLocale])
     }
 }
 

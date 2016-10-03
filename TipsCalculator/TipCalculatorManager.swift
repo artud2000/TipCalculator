@@ -9,12 +9,12 @@
 import Foundation
 
 class TipCalculatorManager {
-    class func calculateIndividualPayment(total: Float, percentage: Int, people: Int) -> Float {
-        let percentageFraction: Float = Float(Float(percentage) / 100.0)
-        return Float((total * percentageFraction) / Float(people))
+    class func calculateIndividualPayment(total: Double, percentage: Int, people: Int) -> Double {
+        let percentageFraction: Double = Double(Double(percentage) / 100.0)
+        return Double((total * percentageFraction) / Double(people))
     }
     
-    class func calculateTotalTip(total: Float, percentage: Int) -> Float {
-        return Float(total * Float(Float(percentage) / 100.0))
+    class func calculateTotalTip(total: Double, percentage: Int) -> Double {
+        return Double(total * Double(Double(percentage) / 100.0))
     }
 }

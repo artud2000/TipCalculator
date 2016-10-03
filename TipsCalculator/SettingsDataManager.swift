@@ -17,6 +17,7 @@ enum ThemeEnum {
 
 class SettingsDataManager: NSObject, UITableViewDelegate, UITableViewDataSource {
     var themes: [String] = ["Light", "Dark"]
+    var localeDictionary: [String: String] = LocaleManager.constructLocale()
     
     @objc(tableView:heightForRowAtIndexPath:) func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 40.0
@@ -50,7 +51,7 @@ class SettingsDataManager: NSObject, UITableViewDelegate, UITableViewDataSource 
             
             
             let localeName: String = NSLocale.availableLocaleIdentifiers[indexPath.row]
-            onDemandCell.textLabel?.text = LocaleManager.sharedInstace.localeDictionary[localeName]
+            onDemandCell.textLabel?.text = localeDictionary[localeName]
             
         
             return onDemandCell
