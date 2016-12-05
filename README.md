@@ -30,13 +30,6 @@ Here's a walkthrough of implemented user stories:
 
 GIF created with [gfycat](https://gfycat.com/)
 
-## Notes
-
-Describe any challenges encountered while building the app.
-
-I'm not an expert yet in AutoLayout so that caused me some issues, also dealing with the currency was a bit troublesome I could have done it easily in Objective-C but as Swift 3 is new for me I struggled a bit. I also faced some difficulties with the some of the classes initializer methods some of them were requiring me a different type of parameter in the initializer in order to instantiate an object from the desired class.
-
-
 
 ## License
 
